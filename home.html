@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ammar's Portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('Background.jpg'); /* Use local image */
+            background-size: 110% contain; /* Cover the entire area */
+            background-position: center; /* Center the background */
+            background-attachment: fixed; /* Keeps the background fixed */
+            position: relative; /* For positioning child elements absolutely */
+            overflow: hidden; /* Hide any overflow caused by background movement */
+        }
+
+        .circle {
+            position: absolute;
+            background-color: rgba(88, 88, 88, 0.7); /* Example color */
+            border-radius: 50%;
+            pointer-events: auto; /* Ensure the circle is clickable */
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .toggle-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-image: url('toggle-icon.png'); /* Replace with your image URL */
+            background-size: cover;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 3; /* Make sure it's above other elements */
+        }
+
+        .toggle-button.active {
+            filter: brightness(1.2); /* Change appearance when active (optional) */
+            filter: contrast(51)
+        }
+
+        .text-container {
+            position: absolute;
+            top: 250px;
+            left: 200px;
+            color: #ffffff;
+            max-width: 600px;
+            z-index: 2; /* Ensure text is above the overlay */
+            
+        }
+        
+
+        .text-container h1 {
+            margin: 0;
+            font-size: 4em;
+            font-weight: 600;
+        }
+
+        .text-container p {
+            margin: 10px 0;
+            font-size: 1em;
+            font-weight: 200;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .text-container .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            margin-top: 20px; /* Space between text and button */
+            font-size: 1em;
+            font-weight: 400;
+            color: #ffffff;
+            text-decoration: none;
+            border: 2px solid #ffffff;
+            border-radius: 20px; /* Rounded corners */
+            background: transparent;
+            transition: background 0.3s ease, color 0.3s ease;
+            position: relative; /* For positioning arrow */
+        }
+
+        .text-container .btn-about,
+        .text-container .btn-resume {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            margin-top: 20px; /* Space between text and button */
+            font-size: 1em;
+            font-weight: 400;
+            color: #ffffff;
+            text-decoration: none;
+            border: 2px solid #ffffff;
+            border-radius: 20px; /* Rounded corners */
+            background: transparent;
+            transition: background 0.3s ease, color 0.3s ease;
+            position: relative; /* For positioning arrow */
+        }
+
+        .text-container .btn-about:hover,
+        .text-container .btn-resume:hover {
+            background: #ffffff;
+            color: #121212;
+        }
+
+        .text-container .btn-about::after,
+        .text-container .btn-resume::after {
+            content: '→'; /* Arrow symbol */
+            font-size: 1.2em;
+            margin-left: 10px; /* Space between text and arrow */
+        }
+
+        .text-container .btn:hover {
+            background: #ffffff;
+            color: #121212;
+        }
+
+        .text-container .btn::after {
+            content: '→'; /* Arrow symbol */
+            font-size: 1.2em;
+            margin-left: 10px; /* Space between text and arrow */
+        }
+
+        .social-buttons {
+            position: absolute;
+            top: 350px; /* Move buttons lower than the text */
+            left: 100px; /* Move buttons a bit to the right */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center buttons */
+            z-index: 2; /* Ensure buttons are above the overlay */
+        }
+
+        .social-buttons::before,
+        .social-buttons::after {
+            content: "";
+            display: block;
+            width: 1px; /* Width of the line */
+            height: 150px; /* Thickness of the line */
+            background-color: #ffffff; /* Color of the line */
+            margin: 10px 0; /* Space between the line and buttons */
+        }
+
+        .social-buttons a {
+            margin: 10px 0;
+        }
+
+        .social-buttons img {
+            width: 40px; /* Adjust size of the buttons */
+            height: 40px;
+            border-radius: 20%; /* Optional: make images circular */
+            transition: opacity 0.3s ease; /* Smooth transition on hover */
+        }
+
+        .social-buttons img:hover {
+            opacity: 0.8; /* Slight opacity change on hover */
+        }
+
+        /* Overlay to darken the background */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Black with 50% opacity */
+            z-index: 1; /* Ensure the overlay is below text and buttons */
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 900px;
+            height: 80%;
+            background-color: #ffffff;
+            color: #000000;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 3; /* Ensure the popup is above other content */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .popup .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #121212;
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .popup-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .project {
+            width: calc(50% - 20px); /* Adjust width for two-column layout */
+            box-sizing: border-box;
+        }
+
+        .project img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .project h3 {
+            margin-top: 10px;
+            font-size: 1.5em;
+        }
+
+        .project p {
+            margin-top: 5px;
+        }
+
+        /* Add a background overlay to darken the screen */
+        .buttonoverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Black with 50% opacity */
+            z-index: 2; /* Ensure the overlay is below the popup */
+            display: none;
+        }
+
+        .fade-out {
+            transition: opacity 0.5s ease; /* Adjust duration and timing function as needed */
+        }
+
+        /* State when fading out */
+        .fade-out.hidden {
+            opacity: 0; /* Fully transparent */
+        }
+
+        .disable-pointer-events {
+            pointer-events: none;
+        }
+
+        #pdfViewer {
+            width: 100%;
+            height: 100%;
+            border: none; /* Remove border */
+        }
+    </style>
+</head>
+<body>
+    <div class="popup" id="popup">
+        <button class="close-btn" id="closeBtn">&times;</button>
+        <h2>Projects</h2>
+        <div class="popup-content">
+            <div class="project">
+                <img src="project1.png" alt="Project 1">
+                <h3>Website</h3>
+                <p>Developed the website found at ammar.icu using HTML, CSS, and JavaScript.</p>
+            </div>
+            <!-- Add more project sections as needed -->
+        </div>
+    </div>
+
+    <div class="popup" id="popup-about">
+        <button class="close-btn" id="closeBtnAbout">&times;</button>
+        <h2>About Me</h2>
+        <p>I am a 2nd year Wayne State Student studying computer science. I am passionate about programming, and I have been since I was 13. Over the many years, I have been growing my knowledge and putting it to use, either by making fun tools, or things that help me in my classes throughout schooling. I like problem-solving because it allows me to put my creativity to the test and allows for opportunities to work with peers to get an outside look.</p>
+    </div>
+    
+    <div class="popup" id="popup-resume">
+        <button class="close-btn" id="closeBtnResume">&times;</button>
+        <h2>Resume</h2>
+        <iframe id="pdfViewer" src="resume.pdf" type="application/pdf"></iframe>
+        <!-- Or you can use <object> tag instead of <iframe> if preferred -->
+        <!-- <object id="pdfViewer" data="your-resume.pdf" type="application/pdf" width="100%" height="100%"></object> -->
+    </div>
+
+    <div id="circle-container"></div> <!-- Container for circles -->
+
+    <button class="toggle-button" id="toggleBtn"></button>
+
+    <!-- Overlay -->
+    <div class="buttonoverlay"></div>
+
+    <div class="overlay"></div>
+    <div id="non-popup-content">
+
+        <div class="text-container fade-out">
+            <h1>Welcome</h1>
+            <p>Hi, I'm Ammar. I am a 2nd year Wayne State University Student. Here you'll find a showcase of my work and projects over the years.</p>
+            <a href="#" class="btn" id="projectsBtn">Projects</a>
+            <a href="#" class="btn-about" id="aboutMeBtn">About Me</a>
+            <a href="#" class="btn-resume" id="resumeBtn">Resume</a>
+        </div>
+        <div class="social-buttons fade-out">
+            <!-- Lines above and below the buttons -->
+            <a href="https://www.linkedin.com/in/ammar-deno-2b4090268/" target="_blank">
+                <img src="LinkedIn.png" alt="LinkedIn">
+            </a>
+            <a href="https://profile.indeed.com/?hl=en_US&co=US&from=gnav-acme--acme-webapp" target="_blank">
+                <img src="Indeed.jpg" alt="YouTube">
+            </a>
+            <!-- Add more buttons as needed -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            // Calculate scaling factors based on screen size
+            const scaleFactorX = 0.25;
+            const scaleFactorY = -.05;
+
+            const offsetX = -100 * scaleFactorX;
+            const offsetY = 1400 * scaleFactorY;
+
+            // Adjust the background position
+            document.body.style.backgroundPositionX = `${(x * 25) + offsetX}px`;
+            document.body.style.backgroundPositionY = `${(y * 25) + offsetY}px`;
+        });
+
+        const projectsBtn = document.getElementById('projectsBtn');
+        const popup = document.getElementById('popup');
+        const overlay = document.querySelector('.overlay');
+        const closeBtn = document.getElementById('closeBtn');
+        const elementsToFade = document.querySelectorAll('.fade-out'); // Select the elements to fade
+        const aboutMeBtn = document.getElementById('aboutMeBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const popupAbout = document.getElementById('popup-about');
+        const popupResume = document.getElementById('popup-resume');
+        const closeBtnAbout = document.getElementById('closeBtnAbout');
+        const closeBtnResume = document.getElementById('closeBtnResume');
+        const nonPopupContent = document.getElementById('non-popup-content'); // Select the new wrapper
+
+        // Function to show the popup and overlay
+        const showPopup = (popup) => {
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+            overlay.classList.add('active'); // Make the overlay visible
+            elementsToFade.forEach(element => {
+                element.classList.add('hidden');
+            });
+            nonPopupContent.classList.add('disable-pointer-events'); // Disable pointer events for non-popup content
+        };
+
+        const hidePopup = (popup) => {
+            popup.style.display = 'none';
+            //overlay.style.display = 'none';
+            //overlay.classList.remove('active'); // Hide the overlay
+            elementsToFade.forEach(element => {
+                element.classList.remove('hidden');
+            });
+            nonPopupContent.classList.remove('disable-pointer-events'); // Enable pointer events for non-popup content
+        };
+
+        // Event listeners for the new buttons
+        aboutMeBtn.addEventListener('click', () => showPopup(popupAbout));
+        resumeBtn.addEventListener('click', () => showPopup(popupResume));
+        projectsBtn.addEventListener('click', () => showPopup(popup));
+
+        // Event listeners for the new close buttons
+        closeBtnAbout.addEventListener('click', () => hidePopup(popupAbout));
+        closeBtnResume.addEventListener('click', () => hidePopup(popupResume));
+        closeBtn.addEventListener('click', () => hidePopup(popup));
+
+        // Update the overlay click event to close all popups
+        overlay.addEventListener('click', () => {hidePopup(popup)});
+        overlay.addEventListener('click', () => {hidePopup(popupAbout)});
+        overlay.addEventListener('click', () => {hidePopup(popupResume)});
+
+        let miniGame = false;
+        let frequency = 1000;
+        let circleInterval; // Variable to store the interval
+
+        // Function to create a circle
+        function createCircle() {
+            if (!miniGame) return;
+
+            const circle = document.createElement('div');
+            const size = Math.random() * 50 + 20; // Random size between 20px and 70px
+            const randomColor = `hsl(${Math.random() * 360}, 100%, 70%)`; // Random hue, 100% saturation, 70% lightness
+
+            circle.className = 'circle';
+            circle.style.width = `${size}px`;
+            circle.style.height = `${size}px`;
+            circle.style.left = `${Math.random() * 100}vw`;
+            circle.style.top = `${Math.random() * 100}vh`;
+            circle.style.transform = 'scale(0)'; // Start scale at 0
+            circle.style.opacity = '1'; // Full opacity
+            circle.style.backgroundColor = randomColor; // Set random color
+            circle.style.zIndex = '2';
+            document.getElementById('circle-container').appendChild(circle);
+
+            // Animate the circle to increase in size
+            setTimeout(() => {
+                circle.style.transform = 'scale(1)';
+            }, 100);
+
+            // Add pop effect on click
+            circle.addEventListener('click', () => {
+                circle.style.transform = 'scale(0)';
+                circle.style.opacity = '0';
+                frequency -= 50;
+                console.log(`Circle frequency is now ${frequency}`);
+                resetCircleInterval(); // Reset the interval to apply the new frequency
+                setTimeout(() => {
+                    circle.remove();
+                }, 300); // Match this with the transition time
+            });
+
+            // Auto-pop the circle after 3 seconds if not clicked
+            const autoPopTimeout = setTimeout(() => {
+                circle.style.transform = 'scale(0)';
+                circle.style.opacity = '0';
+                frequency += 50;
+                resetCircleInterval(); // Reset the interval to apply the new frequency
+                setTimeout(() => {
+                    circle.remove();
+                }, 300); // Match this with the transition time
+            }, 1000);
+
+            // Clear the auto-pop timeout if the circle is clicked
+            circle.addEventListener('click', () => {
+                clearTimeout(autoPopTimeout);
+            });
+        }
+
+        // Function to toggle circle spawning on and off
+        const toggleCircleSpawning = () => {
+            frequency = 1000;
+            miniGame = !miniGame;
+            const toggleBtn = document.getElementById('toggleBtn');
+            toggleBtn.classList.toggle('active', miniGame);
+            console.log(`Circle spawning is now ${miniGame ? 'on' : 'off'}`);
+            
+            if (miniGame) {
+                resetCircleInterval(); // Start the interval when the game is on
+            } else {
+                clearInterval(circleInterval); // Stop the interval when the game is off
+            }
+        };
+
+        // Function to reset the circle spawning interval
+        const resetCircleInterval = () => {
+            clearInterval(circleInterval); // Clear the previous interval
+            circleInterval = setInterval(() => {
+                if (miniGame) {
+                    createCircle();
+                }
+            }, frequency); // Set the new interval with the updated frequency
+        };
+
+        // Attach event listener to the toggle button
+        const toggleBtn = document.getElementById('toggleBtn');
+        toggleBtn.addEventListener('click', toggleCircleSpawning);
+    </script>
+</body>
+</html>
