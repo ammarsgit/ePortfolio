@@ -12,15 +12,17 @@
             background-color: #121212;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-image: url('Background.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            position: relative;
             overflow: hidden;
+            position: relative;
+        }
+
+        #space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
 
         .circle {
@@ -29,6 +31,7 @@
             border-radius: 50%;
             pointer-events: auto;
             transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 3;
         }
 
         .toggle-button {
@@ -194,7 +197,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 1;
         }
 
@@ -295,6 +298,8 @@
     </style>
 </head>
 <body>
+    <div id="space-background"></div>
+
     <div class="popup" id="popup">
         <button class="close-btn" id="closeBtn">&times;</button>
         <h2>Projects</h2>
@@ -353,82 +358,362 @@
         </div>
     </div>
 
+    <!-- Three.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
+        // Three.js Space Background Implementation
+        const spaceBackground = document.getElementById('space-background');
+        let renderer, scene, camera;
+        let stars = [];
+        let shootingStars = [];
+        let raycaster, mouse;
+        let updateCameraRotation;
+        
+        // Initialize Three.js scene
+        function initThreeJS() {
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            spaceBackground.appendChild(renderer.domElement);
+            
+            // Create scene
+            scene = new THREE.Scene();
+            
+            // Create camera with perspective view
+            camera = new THREE.PerspectiveCamera(
+                75, 
+                window.innerWidth / window.innerHeight, 
+                0.1, 
+                1000
+            );
+            camera.position.z = 50;
+            
+            // Initialize raycaster for star hover detection
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            
+            // Create stars
+            createStars();
+            
+            // Setup camera controls and get the update function
+            updateCameraRotation = setupCameraControls();
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation loop
+            animate();
+        }
+        
+        // Setup camera controls for mouse and touch
+        function setupCameraControls() {
+            // Variables to track mouse/touch position
+            let isPointerDown = false;
+            let previousX = 0;
+            let previousY = 0;
+            let targetRotationX = 0;
+            let targetRotationY = 0;
+            let currentRotationX = 0;
+            let currentRotationY = 0;
+            
+            // Constants for controlling camera movement
+            const rotationSpeed = 0.003;
+            const damping = 0.05;
+            const maxRotation = 0.2;
+            
+            // Mouse/touch down event
+            function onPointerDown(event) {
+                isPointerDown = true;
+                previousX = event.clientX || (event.touches ? event.touches[0].clientX : 0);
+                previousY = event.clientY || (event.touches ? event.touches[0].clientY : 0);
+            }
+            
+            // Mouse/touch move event
+            function onPointerMove(event) {
+                // Update mouse position for raycasting (for star hover effect)
+                const clientX = event.clientX || (event.touches && event.touches[0] ? event.touches[0].clientX : previousX);
+                const clientY = event.clientY || (event.touches && event.touches[0] ? event.touches[0].clientY : previousY);
+                
+                mouse.x = (clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+                
+                // Camera rotation when pointer is moving
+                if (!isPointerDown) {
+                    // Subtle movement even when not dragging
+                    targetRotationX = mouse.y * 0.1;
+                    targetRotationY = mouse.x * 0.1;
+                    return;
+                }
+                
+                // Calculate how much the pointer has moved
+                const deltaX = (clientX - previousX) * rotationSpeed;
+                const deltaY = (clientY - previousY) * rotationSpeed;
+                
+                // Update target rotation with constraints
+                targetRotationY += deltaX;
+                targetRotationX -= deltaY;
+                
+                targetRotationY = Math.max(Math.min(targetRotationY, maxRotation), -maxRotation);
+                targetRotationX = Math.max(Math.min(targetRotationX, maxRotation), -maxRotation);
+                
+                // Update previous position
+                previousX = clientX;
+                previousY = clientY;
+            }
+            
+            // Mouse/touch up event
+            function onPointerUp() {
+                isPointerDown = false;
+            }
+            
+            // Update camera rotation in animation loop
+            function updateCameraRotation() {
+                // Smoothly interpolate current rotation towards target rotation
+                currentRotationX += (targetRotationX - currentRotationX) * damping;
+                currentRotationY += (targetRotationY - currentRotationY) * damping;
+                
+                // Apply rotation to camera
+                camera.rotation.x = currentRotationX;
+                camera.rotation.y = currentRotationY;
+                
+                // Add a small auto-rotation when idle
+                if (!isPointerDown) {
+                    targetRotationY *= 0.98;
+                    targetRotationX *= 0.98;
+                }
+            }
+            
+            // Add event listeners
+            window.addEventListener('mousedown', onPointerDown);
+            window.addEventListener('touchstart', onPointerDown);
+            window.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('touchmove', onPointerMove);
+            window.addEventListener('mouseup', onPointerUp);
+            window.addEventListener('touchend', onPointerUp);
+            
+            // Return the update function to be called in the animation loop
+            return updateCameraRotation;
+        }
+        
+        // Create stars in the scene
+        function createStars() {
+            // Create 1000 small stars
+            for (let i = 0; i < 1000; i++) {
+                const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: getRandomStarColor(), 
+                    transparent: true,
+                    opacity: Math.random() * 0.3 + 0.3
+                });
+                const star = new THREE.Mesh(geometry, material);
+                
+                // Random position in 3D space
+                star.position.x = (Math.random() - 0.5) * 200;
+                star.position.y = (Math.random() - 0.5) * 200;
+                star.position.z = (Math.random() - 0.5) * 200;
+                
+                // Store original properties for hover effect
+                star.userData = {
+                    originalScale: star.scale.x,
+                    originalOpacity: material.opacity,
+                    hovered: false
+                };
+                
+                scene.add(star);
+                stars.push(star);
+            }
+        }
+        
+        // Create a new shooting star with tapering effect
+        function createShootingStar() {
+            // Create shooting star geometry
+            const geometry = new THREE.BufferGeometry();
+            const length = Math.random() * 15 + 5;
+            
+            // Create trail points
+            const positions = new Float32Array(30); // 10 points × 3 values (x, y, z)
+            // Add size attribute for tapering effect
+            const sizes = new Float32Array(10);
+            
+            // Starting point of the shooting star
+            const startX = (Math.random() - 0.5) * 200;
+            const startY = (Math.random() - 0.5) * 200;
+            const startZ = (Math.random() - 0.5) * 100;
+            
+            // Direction vector
+            const dirX = (Math.random() - 0.5) * 2;
+            const dirY = (Math.random() - 0.5) * 2;
+            const dirZ = 0;
+            
+            // Create trail points with decreasing sizes
+            for (let i = 0; i < 10; i++) {
+                positions[i * 3] = startX - (dirX * i * (length / 10));
+                positions[i * 3 + 1] = startY - (dirY * i * (length / 10));
+                positions[i * 3 + 2] = startZ - (dirZ * i * (length / 10));
+                
+                // Tapering effect - size decreases along the trail
+                sizes[i] = 1.0 - (i / 10);
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            // Create material with bright color and size attenuation
+            const material = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.8,
+                transparent: true,
+                opacity: 1,
+                sizeAttenuation: true
+            });
+            
+            // Use vertex shader to apply size attribute
+            material.onBeforeCompile = (shader) => {
+                shader.vertexShader = shader.vertexShader.replace(
+                    'void main() {',
+                    `attribute float size;
+                    void main() {
+                        gl_PointSize = size * gl_PointSize;`
+                );
+            };
+            
+            const shootingStar = new THREE.Points(geometry, material);
+            
+            // Store shooting star properties
+            shootingStar.userData = {
+                dirX: dirX * 2,
+                dirY: dirY * 2,
+                dirZ: dirZ * 2,
+                life: 1.0, // Life decreases over time
+                speed: Math.random() * 0.5 + 0.5
+            };
+            
+            scene.add(shootingStar);
+            shootingStars.push(shootingStar);
+        }
+        
+        // Update shooting stars position and life
+        function updateShootingStars() {
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const shootingStar = shootingStars[i];
+                
+                // Move shooting star
+                shootingStar.position.x += shootingStar.userData.dirX * shootingStar.userData.speed;
+                shootingStar.position.y += shootingStar.userData.dirY * shootingStar.userData.speed;
+                shootingStar.position.z += shootingStar.userData.dirZ * shootingStar.userData.speed;
+                
+                // Decrease life
+                shootingStar.userData.life -= 0.01;
+                shootingStar.material.opacity = shootingStar.userData.life;
+                
+                // Remove if life is over or out of view
+                if (shootingStar.userData.life <= 0 || 
+                    Math.abs(shootingStar.position.x) > 150 || 
+                    Math.abs(shootingStar.position.y) > 150) {
+                    scene.remove(shootingStar);
+                    shootingStars.splice(i, 1);
+                }
+            }
+        }
+        
+        // Get random star color (white, blue-white, yellow-white)
+        function getRandomStarColor() {
+            const colors = [
+                0xffffff, // White
+                0xeeeeff, // Blue-white
+                0xffffee, // Yellow-white
+                0xffeeee  // Red-white
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // Update star hover effects using raycasting
+        function updateStarHover() {
+            // Update the raycaster with the camera and mouse position
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Find intersections with stars
+            const intersects = raycaster.intersectObjects(stars);
+            
+            // Reset all stars to original state
+            stars.forEach(star => {
+                if (star.userData.hovered) {
+                    // Gradually return to original size and opacity
+                    star.scale.lerp(new THREE.Vector3(
+                        star.userData.originalScale,
+                        star.userData.originalScale,
+                        star.userData.originalScale
+                    ), 0.1);
+                    star.material.opacity = THREE.MathUtils.lerp(
+                        star.material.opacity,
+                        star.userData.originalOpacity,
+                        0.1
+                    );
+                    
+                    if (Math.abs(star.scale.x - star.userData.originalScale) < 0.01) {
+                        star.userData.hovered = false;
+                    }
+                }
+            });
+            
+            // Highlight hovered stars
+            if (intersects.length > 0) {
+                const hoveredStar = intersects[0].object;
+                hoveredStar.userData.hovered = true;
+                
+                // Gradually increase size and opacity
+                hoveredStar.scale.lerp(new THREE.Vector3(3, 3, 3), 0.2);
+                hoveredStar.material.opacity = THREE.MathUtils.lerp(
+                    hoveredStar.material.opacity,
+                    1.0,
+                    0.2
+                );
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update camera rotation
+            updateCameraRotation();
+            
+            // Update shooting stars
+            updateShootingStars();
+            
+            // Occasionally create a new shooting star
+            if (Math.random() < 0.01) {
+                createShootingStar();
+            }
+            
+            // Update star hover effects
+            updateStarHover();
+            
+            // Rotate stars slightly for a twinkling effect
+            stars.forEach(star => {
+                star.rotation.x += 0.001;
+                star.rotation.y += 0.001;
+            });
+            
+            // Render the scene
+            renderer.render(scene, camera);
+        }
+        
+        // Initialize Three.js once the DOM is loaded
+        document.addEventListener('DOMContentLoaded', initThreeJS);
+
         // Detect if the device is mobile
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
-        // Background movement effect only for non-mobile devices
-        if (!isMobile) {
-            document.addEventListener('mousemove', (e) => {
-                const x = e.clientX / window.innerWidth;
-                const y = e.clientY / window.innerHeight;
-                const scaleFactorX = 0.25;
-                const scaleFactorY = -0.05;
-                const offsetX = -100 * scaleFactorX;
-                const offsetY = 1400 * scaleFactorY;
-                document.body.style.backgroundPositionX = `${(x * 25) + offsetX}px`;
-                document.body.style.backgroundPositionY = `${(y * 25) + offsetY}px`;
-            });
-        }
-
-        const projectsBtn = document.getElementById('projectsBtn');
-        const popup = document.getElementById('popup');
-        const overlay = document.querySelector('.overlay');
-        const closeBtn = document.getElementById('closeBtn');
-        const elementsToFade = document.querySelectorAll('.fade-out');
-        const aboutMeBtn = document.getElementById('aboutMeBtn');
-        const resumeBtn = document.getElementById('resumeBtn');
-        const popupAbout = document.getElementById('popup-about');
-        const popupResume = document.getElementById('popup-resume');
-        const closeBtnAbout = document.getElementById('closeBtnAbout');
-        const closeBtnResume = document.getElementById('closeBtnResume');
-        const nonPopupContent = document.getElementById('non-popup-content');
-
-        // Function to show the popup and overlay
-        const showPopup = (popup) => {
-            popup.style.display = 'block';
-            overlay.style.display = 'block';
-            overlay.classList.add('active');
-            elementsToFade.forEach(element => {
-                element.classList.add('hidden');
-            });
-            nonPopupContent.classList.add('disable-pointer-events');
-        };
-
-        const hidePopup = (popup) => {
-            popup.style.display = 'none';
-            elementsToFade.forEach(element => {
-                element.classList.remove('hidden');
-            });
-            nonPopupContent.classList.remove('disable-pointer-events');
-        };
-
-        // Event listeners for buttons
-        aboutMeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPopup(popupAbout);
-        });
-        resumeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPopup(popupResume);
-        });
-        projectsBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPopup(popup);
-        });
-
-        // Event listeners for close buttons
-        closeBtnAbout.addEventListener('click', () => hidePopup(popupAbout));
-        closeBtnResume.addEventListener('click', () => hidePopup(popupResume));
-        closeBtn.addEventListener('click', () => hidePopup(popup));
-
-        // Update the overlay click event to close all popups
-        overlay.addEventListener('click', () => {
-            hidePopup(popup);
-            hidePopup(popupAbout);
-            hidePopup(popupResume);
-        });
-
+        // Original circle game logic
         let miniGame = false;
         let frequency = 1000;
         let circleInterval;
@@ -449,7 +734,6 @@
             circle.style.transform = 'scale(0)';
             circle.style.opacity = '1';
             circle.style.backgroundColor = randomColor;
-            circle.style.zIndex = '2';
             document.getElementById('circle-container').appendChild(circle);
 
             // Animate the circle to increase in size
@@ -533,6 +817,65 @@
         toggleBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             toggleCircleSpawning();
+        });
+
+        // Popup handling
+        const projectsBtn = document.getElementById('projectsBtn');
+        const popup = document.getElementById('popup');
+        const overlay = document.querySelector('.overlay');
+        const closeBtn = document.getElementById('closeBtn');
+        const elementsToFade = document.querySelectorAll('.fade-out');
+        const aboutMeBtn = document.getElementById('aboutMeBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const popupAbout = document.getElementById('popup-about');
+        const popupResume = document.getElementById('popup-resume');
+        const closeBtnAbout = document.getElementById('closeBtnAbout');
+        const closeBtnResume = document.getElementById('closeBtnResume');
+        const nonPopupContent = document.getElementById('non-popup-content');
+
+        // Function to show the popup and overlay
+        const showPopup = (popup) => {
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+            overlay.classList.add('active');
+            elementsToFade.forEach(element => {
+                element.classList.add('hidden');
+            });
+            nonPopupContent.classList.add('disable-pointer-events');
+        };
+
+        const hidePopup = (popup) => {
+            popup.style.display = 'none';
+            elementsToFade.forEach(element => {
+                element.classList.remove('hidden');
+            });
+            nonPopupContent.classList.remove('disable-pointer-events');
+        };
+
+        // Event listeners for buttons
+        aboutMeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPopup(popupAbout);
+        });
+        resumeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPopup(popupResume);
+        });
+        projectsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPopup(popup);
+        });
+
+        // Event listeners for close buttons
+        closeBtnAbout.addEventListener('click', () => hidePopup(popupAbout));
+        closeBtnResume.addEventListener('click', () => hidePopup(popupResume));
+        closeBtn.addEventListener('click', () => hidePopup(popup));
+
+        // Update the overlay click event to close all popups
+        overlay.addEventListener('click', () => {
+            hidePopup(popup);
+            hidePopup(popupAbout);
+            hidePopup(popupResume);
         });
     </script>
 </body>
