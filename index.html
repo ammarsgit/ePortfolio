@@ -3,925 +3,1417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ammar's Portfolio</title>
+    <title>Ammar Deno - CS Student Portfolio</title>
     <style>
-        body {
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #3730A3;
+            --secondary: #10B981;
+            --dark: #111827;
+            --light: #F9FAFB;
+            --card-bg: rgba(31, 41, 55, 0.85);
+            --text-primary: #F9FAFB;
+            --text-secondary: #D1D5DB;
+        }
+        
+        * {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-            position: relative;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-
-        #space-background {
+        
+        body {
+            color: var(--light);
+            background-color: var(--dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        
+        .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;
+            background: radial-gradient(circle at center, rgba(17, 24, 39, 0.5) 0%, rgba(17, 24, 39, 0.8) 100%);
+            z-index: -1;
         }
-
-        .circle {
-            position: absolute;
-            background-color: rgba(88, 88, 88, 0.7);
-            border-radius: 50%;
-            pointer-events: auto;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 3;
-        }
-
-        .toggle-button {
+        
+        /* Navigation */
+        nav {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background-image: url('toggle-icon.png');
-            background-size: cover;
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-            z-index: 3;
-        }
-
-        .toggle-button.active {
-            filter: brightness(1.2);
-            filter: contrast(51);
-        }
-
-        .text-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #ffffff;
-            max-width: 90%;
-            width: 600px;
-            z-index: 2;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .text-container h1 {
-            margin: 0;
-            font-size: 3em;
-            font-weight: 600;
-        }
-
-        .text-container p {
-            margin: 10px 0;
-            font-size: 1em;
-            font-weight: 200;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .text-container .btn-container {
+            top: 0;
+            width: 100%;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(17, 24, 39, 0.7);
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .text-container .btn,
-        .text-container .btn-about,
-        .text-container .btn-resume {
+        
+        nav.scrolled {
+            padding: 1rem 5%;
+            background-color: rgba(17, 24, 39, 0.9);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo span {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+        
+        .logo-dot {
+            color: var(--secondary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin-top: 4rem;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .typed-text {
+            display: inline-block;
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            animation: fadeInUp 0.8s ease-out 0.3s forwards;
+            opacity: 0;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.6s forwards;
+            opacity: 0;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            font-size: 1em;
-            font-weight: 400;
-            color: #ffffff;
-            text-decoration: none;
-            border: 2px solid #ffffff;
-            border-radius: 20px;
-            background: transparent;
-            transition: background 0.3s ease, color 0.3s ease;
-            position: relative;
-            margin: 5px;
+            gap: 0.5rem;
         }
-
-        .text-container .btn:hover,
-        .text-container .btn-about:hover,
-        .text-container .btn-resume:hover {
-            background: #ffffff;
-            color: #121212;
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 2px solid var(--primary);
         }
-
-        .text-container .btn::after,
-        .text-container .btn-about::after,
-        .text-container .btn-resume::after {
-            content: '→';
-            font-size: 1.2em;
-            margin-left: 10px;
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
-
-        .social-buttons {
-            position: fixed;
-            bottom: 20px;
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--text-secondary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--text-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            z-index: 2;
-            width: 100%;
-            padding: 10px 0;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            animation: bounce 2s infinite;
         }
-
-        .social-buttons a {
-            margin: 0 10px;
+        
+        /* About Section */
+        section {
+            padding: 5rem 5%;
+            position: relative;
         }
-
-        .social-buttons img {
-            width: 30px;
-            height: 30px;
-            border-radius: 20%;
-            transition: opacity 0.3s ease;
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: inline-block;
+            position: relative;
         }
-
-        .social-buttons img:hover {
-            opacity: 0.8;
-        }
-
-        /* Vertical line for desktop only */
-        @media (min-width: 768px) {
-            .social-buttons {
-                position: absolute;
-                top: 50%;
-                left: 100px;
-                transform: translateY(-50%);
-                flex-direction: column;
-                width: auto;
-                padding: 0;
-            }
-            
-            .social-buttons::before,
-            .social-buttons::after {
-                content: "";
-                display: block;
-                width: 1px;
-                height: 100px;
-                background-color: #ffffff;
-                margin: 10px 0;
-            }
-            
-            .social-buttons a {
-                margin: 10px 0;
-            }
-            
-            .social-buttons img {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .text-container {
-                top: 250px;
-                left: 200px;
-                transform: none;
-                text-align: left;
-                padding: 0;
-            }
-        }
-
-        .overlay {
+        
+        .section-title::after {
+            content: '';
             position: absolute;
-            top: 0;
             left: 0;
+            bottom: -10px;
+            width: 50px;
+            height: 3px;
+            background-color: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .section-title:hover::after {
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 1;
         }
-
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 900px;
-            height: 80%;
-            background-color: #ffffff;
-            color: #000000;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            z-index: 3;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
+        
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
         }
-
-        .popup .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #121212;
-            color: #ffffff;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 1.2em;
-            cursor: pointer;
-            z-index: 4;
+        
+        .about-image {
+            position: relative;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-
-        .popup-content {
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .about-image:hover img {
+            transform: scale(1.05);
+        }
+        
+        .tech-stack {
+            margin-top: 2rem;
+        }
+        
+        .tech-stack h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tech-icons {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 1rem;
         }
-
-        .project {
-            width: 100%;
-            box-sizing: border-box;
+        
+        .tech-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
-
-        @media (min-width: 768px) {
-            .project {
-                width: calc(50% - 20px);
-            }
+        
+        .tech-icon:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background-color: rgba(79, 70, 229, 0.2);
         }
-
-        .project img {
-            width: 100%;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        
+        /* Projects Section */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
         }
-
-        .project h3 {
-            margin-top: 10px;
-            font-size: 1.5em;
+        
+        .project-card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
         }
-
-        .project p {
-            margin-top: 5px;
+        
+        .project-card.animate {
+            animation: fadeInUp 0.6s ease-out forwards;
         }
-
-        .buttonoverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .project-img {
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .project-img img {
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 2;
-            display: none;
+            object-fit: cover;
+            transition: transform 0.5s ease;
         }
-
-        .fade-out {
-            transition: opacity 0.5s ease;
+        
+        .project-card:hover .project-img img {
+            transform: scale(1.1);
         }
-
-        .fade-out.hidden {
+        
+        .project-content {
+            padding: 1.5rem;
+        }
+        
+        .project-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+        }
+        
+        .project-tag {
+            background-color: rgba(79, 70, 229, 0.2);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .project-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .project-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            transition: color 0.3s ease;
+        }
+        
+        .project-link:hover {
+            color: var(--secondary);
+        }
+        
+        /* Skills Section */
+        .skills-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .skill-category {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .skill-category h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .skill-list {
+            list-style: none;
+        }
+        
+        .skill-item {
+            margin-bottom: 1rem;
+        }
+        
+        .skill-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .skill-bar {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .skill-progress {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 4px;
+            transition: width 1.5s ease-out;
+            width: 0;
+        }
+        
+        /* Education Section */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 3rem auto 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 3rem;
             opacity: 0;
         }
-
-        .disable-pointer-events {
-            pointer-events: none;
+        
+        .timeline-item.animate {
+            animation: fadeIn 0.8s ease-out forwards;
         }
-
-        #pdfViewer {
+        
+        .timeline-item:nth-child(odd) {
+            padding-right: calc(50% + 2rem);
+            text-align: right;
+        }
+        
+        .timeline-item:nth-child(even) {
+            padding-left: calc(50% + 2rem);
+        }
+        
+        .timeline-badge {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        
+        .timeline-content {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .timeline-date {
+            color: var(--secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Contact Section */
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .contact-item:hover {
+            transform: translateX(10px);
+        }
+        
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: rgba(79, 70, 229, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .contact-form {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: rgba(17, 24, 39, 0.9);
+            padding: 3rem 5%;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+        
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        /* Custom floating particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0) translateX(-50%);
+            }
+            40% {
+                transform: translateY(-20px) translateX(-50%);
+            }
+            60% {
+                transform: translateY(-10px) translateX(-50%);
+            }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading animation */
+        .loading-screen {
+            position: fixed;
             width: 100%;
             height: 100%;
-            border: none;
+            background-color: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loading-animation {
+            display: flex;
+            align-items: center;
+        }
+        
+        .loading-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .loading-dots {
+            display: flex;
+            margin-left: 10px;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            margin: 0 5px;
+            animation: loadingDot 1.5s infinite ease-in-out;
+        }
+        
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes loadingDot {
+            0%, 100% {
+                transform: scale(0.5);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .about-content,
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .about-image {
+                margin-bottom: 2rem;
+            }
+            
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                padding-left: 80px;
+                padding-right: 0;
+                text-align: left;
+            }
+            
+            .timeline-badge {
+                left: 30px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 5%;
+            }
+            
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: rgba(17, 24, 39, 0.95);
+                flex-direction: column;
+                padding: 1rem 0;
+                text-align: center;
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .hero-content {
+                margin-top: 2rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .contact-form {
+                margin-top: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="space-background"></div>
-
-    <div class="popup" id="popup">
-        <button class="close-btn" id="closeBtn">&times;</button>
-        <h2>Projects</h2>
-        <div class="popup-content">
-            <div class="project">
-                <img src="project1.png" alt="Project 1">
-                <h3>Website</h3>
-                <p>Developed the website found at ammar.icu using HTML, CSS, and JavaScript.</p>
-            </div>
-            <div class="project">
-                <img src="project2.png" alt="Project 2">
-                <h3>WAT Project</h3>
-                <p>Analysis on my work in Technical Communications class and on wilsonadaptive.com</p>
-                <iframe src="WAT.pdf" width="100%" height="300px"></iframe>
-                <a href="WAT.pdf" class="btn" target="_blank">Download WAT.pdf</a>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-animation">
+            <div class="loading-text">Loading</div>
+            <div class="loading-dots">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
             </div>
         </div>
     </div>
 
-    <div class="popup" id="popup-about">
-        <button class="close-btn" id="closeBtnAbout">&times;</button>
-        <h2>About Me</h2>
-        <p>I am a 2nd year Wayne State Student studying computer science. I am passionate about programming, and I have been since I was 13. Over the many years, I have been growing my knowledge and putting it to use, either by making fun tools, or things that help me in my classes throughout schooling. I like problem-solving because it allows me to put my creativity to the test and allows for opportunities to work with peers to get an outside look.</p>
-    </div>
-    
-    <div class="popup" id="popup-resume">
-        <button class="close-btn" id="closeBtnResume">&times;</button>
-        <h2>Resume</h2>
-        <iframe id="pdfViewer" src="resume.pdf" type="application/pdf"></iframe>
-    </div>
-
-    <div id="circle-container"></div>
-
-    <button class="toggle-button" id="toggleBtn"></button>
-
-    <div class="buttonoverlay"></div>
-
+    <!-- Three.js Canvas Container -->
+    <div id="canvas-container"></div>
     <div class="overlay"></div>
-    <div id="non-popup-content">
-        <div class="text-container fade-out">
-            <h1>Welcome</h1>
-            <p>Hi, I'm Ammar. I am a 2nd year Wayne State University Student. Here you'll find a showcase of my work and projects over the years.</p>
-            <div class="btn-container">
-                <a href="#" class="btn" id="projectsBtn">Projects</a>
-                <a href="#" class="btn-about" id="aboutMeBtn">About Me</a>
-                <a href="#" class="btn-resume" id="resumeBtn">Resume</a>
+
+    <!-- Navigation -->
+    <nav id="main-nav">
+        <a href="#" class="logo"><span>{</span>Ammar Deno<span class="logo-dot">.</span><span>}</span></a>
+        <div class="nav-links" id="nav-links">
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#projects">Projects</a>
+            <a href="#skills">Skills</a>
+            <a href="#education">Education</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <button class="mobile-menu-btn" id="mobile-menu-btn">
+            ☰
+        </button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <div class="typed-text" id="typed-text"></div>
+            <h1>I'm <span id="name">Ammar Deno</span><br>Computer Science Student</h1>
+            <p>Passionate and experienced Computer Science student with over six years of programming experience across Python, HTML, CSS, JavaScript, C++, and Lua. Seeking to leverage my skills in development, teamwork, and problem-solving to contribute to innovative projects.</p>
+            <div class="cta-buttons">
+                <a href="#projects" class="btn btn-primary">Past Projects</a>
+                <a href="#contact" class="btn btn-secondary">Contact Me</a>
             </div>
         </div>
-        <div class="social-buttons fade-out">
-            <a href="https://www.linkedin.com/in/ammar-deno-2b4090268/" target="_blank">
-                <img src="LinkedIn.png" alt="LinkedIn">
-            </a>
-            <a href="https://profile.indeed.com/?hl=en_US&co=US&from=gnav-acme--acme-webapp" target="_blank">
-                <img src="Indeed.jpg" alt="Indeed">
-            </a>
+        <div class="scroll-indicator">
+            <span>Scroll Down</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
-    </div>
+    </section>
 
-    <!-- Three.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- About Section -->
+    <section id="about">
+        <h2 class="section-title">About Me</h2>
+        <div class="about-content">
+            <div class="about-image">
+                <img src="https://via.placeholder.com/600x400" alt="Profile Picture">
+            </div>
+            <div>
+                <p>I am a Computer Science student at Wayne State University with a passion for problem-solving and innovation. My journey in programming began when I was 13, and I've been developing my skills ever since. I enjoy creating practical applications that solve real-world problems.</p>
+                <p>Currently focusing on software development and game development, I am particularly interested in how technology can be used to create engaging and interactive experiences.</p>
+                <div class="tech-stack">
+                    <h3>Tech Stack</h3>
+                    <div class="tech-icons">
+                        <div class="tech-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 18.178C12.2749 18.178 12.5 17.9529 12.5 17.678C12.5 17.4031 12.2749 17.178 12 17.178C11.7251 17.178 11.5 17.4031 11.5 17.678C11.5 17.9529 11.7251 18.178 12 18.178Z" fill="#4F46E5"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3.07L3 7.07V16.93L12 20.93L21 16.93V7.07L12 3.07ZM19 15.8565L12 18.9047L5 15.8565V8.14346L12 5.09527L19 8.14346V15.8565Z" fill="#4F46E5"/>
+                            </svg>
+                        </div>
+                        <div class="tech-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.0001 2L3 6.5L5.5 7.70833M12.0001 2L21.0001 6.5L18.5001 7.70833M12.0001 2V11M5.5 7.70833L12.0001 11L18.5001 7.70833M5.5 7.70833V16.2917L12.0001 20M18.5001 7.70833V16.2917L12.0001 20M12.0001 20V11" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="tech-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 12.0001L9 19.0001L16 12.0001L9 5.00012L2 12.0001Z" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M16 5.00012L22.5 11.5001L16 18.0001" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="tech-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 6L6 17L12 14L18 17L21 6M3 6L12 9M3 6C3 6 9 3 12 3C15 3 21 6 21 6M12 9V14M12 9L21 6" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <!-- Projects Section -->
+    <section id="projects">
+        <h2 class="section-title">My Projects</h2>
+        <div class="projects-grid">
+            <!-- Project 1 -->
+            <div class="project-card">
+                <div class="project-img">
+                    <img src="project1.png" alt="Project 1">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">AEGIS Video Game</h3>
+                    <p>Spearheaded the development of several video games, dedicating over 8 hours daily to coding, debugging, and feature implementation.</p>
+                    <div class="project-tags">
+                        <span class="project-tag">Lua</span>
+                        <span class="project-tag">Roblox Studio</span>
+                        <span class="project-tag">Game Development</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 20.0006H6C4.93913 20.0006 3.92172 19.5792 3.17157 18.8291C2.42143 18.079 2 17.0616 2 16.0006V6.00061C2 4.93974 2.42143 3.92233 3.17157 3.17219C3.92172 2.42204 4.93913 2.00061 6 2.00061H16C17.0609 2.00061 18.0783 2.42204 18.8284 3.17219C19.5786 3.92233 20 4.93974 20 6.00061V10.0006M14 14.0006H22M22 14.0006V22.0006M22 14.0006L18 18.0006M11 11.0006L11.01 10.9906" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Demo
+                        </a>
+                        <a href="#" class="project-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15 22V18C15.1392 16.7473 14.78 15.4901 14 14.5C17 14.5 20 12.5 20 9C20.08 7.75 19.73 6.52 19 5.5C19.28 4.35 19.28 3.15 19 2C19 2 18 2 16 3.5C13.36 3 10.64 3 8 3.5C6 2 5 2 5 2C4.7 3.15 4.7 4.35 5 5.5C4.27 6.52 3.92 7.75 4 9C4 12.5 7 14.5 10 14.5C9.61 14.99 9.32 15.55 9.15 16.15C8.98 16.75 8.93 17.38 9 18V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 18C4.49 20 4 16 2 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Project 2 -->
+            <div class="project-card">
+                <div class="project-img">
+                    <img src="project2.png" alt="Project 2">
+                </div>
+                <div class="project-content">
+                    <h3 class="project-title">Backend Web Development</h3>
+                    <p>Optimized backend for wilsondaptive.com, leading a team to conduct analysis, make changes, and generate reports.</p>
+                    <div class="project-tags">
+                        <span class="project-tag">HTML</span>
+                        <span class="project-tag">CSS</span>
+                        <span class="project-tag">JavaScript</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="#" class="project-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 20.0006H6C4.93913 20.0006 3.92172 19.5792 3.17157 18.8291C2.42143 18.079 2 17.0616 2 16.0006V6.00061C2 4.93974 2.42143 3.92233 3.17157 3.17219C3.92172 2.42204 4.93913 2.00061 6 2.00061H16C17.0609 2.00061 18.0783 2.42204 18.8284 3.17219C19.5786 3.92233 20 4.93974 20 6.00061V10.0006M14 14.0006H22M22 14.0006V22.0006M22 14.0006L18 18.0006M11 11.0006L11.01 10.9906" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Demo
+                        </a>
+                        <a href="#" class="project-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15 22V18C15.1392 16.7473 14.78 15.4901 14 14.5C17 14.5 20 12.5 20 9C20.08 7.75 19.73 6.52 19 5.5C19.28 4.35 19.28 3.15 19 2C19 2 18 2 16 3.5C13.36 3 10.64 3 8 3.5C6 2 5 2 5 2C4.7 3.15 4.7 4.35 5 5.5C4.27 6.52 3.92 7.75 4 9C4 12.5 7 14.5 10 14.5C9.61 14.99 9.32 15.55 9.15 16.15C8.98 16.75 8.93 17.38 9 18V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 18C4.49 20 4 16 2 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+   
+    
+    <!-- Skills Section -->
+    <section id="skills">
+        <h2 class="section-title">Skills & Expertise</h2>
+        <div class="skills-content">
+            <!-- Programming Languages -->
+            <div class="skill-category">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 18L22 12L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Programming Languages
+                </h3>
+                <ul class="skill-list">
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>Lua</span>
+                            <span>95%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 95%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>Python</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 80%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>JavaScript</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 75%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>C++</span>
+                            <span>70%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 70%"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Web Development -->
+            <div class="skill-category">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 8L3 7C3 5.89543 3.89543 5 5 5L19 5C20.1046 5 21 5.89543 21 7L21 8M3 8L3 17C3 18.1046 3.89543 19 5 19L19 19C20.1046 19 21 18.1046 21 17L21 8M3 8L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 12L16 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 12L8.01 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Web Development
+                </h3>
+                <ul class="skill-list">
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>HTML</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 80%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>CSS</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 80%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>JavaScript</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 75%"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Tools & Technologies -->
+            <div class="skill-category">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.7519 20.8284L12 18.0765M5.63607 11.7626L15.7782 21.9047M11.2374 18.364L5.63607 12.7626M9.77455 5.85333L13.2551 5.6394L13.0412 9.11991M9.77455 5.85333L13.0412 9.11991M9.77455 5.85333L11.2374 7.31618L13.0412 9.11991M9.17159 3.07615L3 9.24774L14.7519 21L20.9235 14.8284L9.17159 3.07615Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Tools & Technologies
+                </h3>
+                <ul class="skill-list">
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>Git/GitHub</span>
+                            <span>90%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 90%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>Visual Studio Code</span>
+                            <span>95%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 95%"></div>
+                        </div>
+                    </li>
+                    <li class="skill-item">
+                        <div class="skill-name">
+                            <span>Roblox Studio</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: 85%"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education">
+        <h2 class="section-title">Education & Experience</h2>
+        <div class="timeline">
+            <!-- Education Item 1 -->
+            <div class="timeline-item">
+                <div class="timeline-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 10V12.5C22 16.0899 22 17.8848 20.9424 18.9424C19.8848 20 18.0899 20 14.5 20H9.5C5.91015 20 4.11522 20 3.05761 18.9424C2 17.8848 2 16.0899 2 12.5V4.5M2 10.5H22M11 2H8.5C5.73858 2 4.35786 2 3.67893 2.67893C3 3.35786 3 4.73858 3 7.5V16.5C3 19.2614 3 20.6421 3.67893 21.3211C4.35786 22 5.73858 22 8.5 22H15.5C18.2614 22 19.6421 22 20.3211 21.3211C21 20.6421 21 19.2614 21 16.5V14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2022 - Present</div>
+                    <h3 class="timeline-title">Bachelor of Science in Computer Science</h3>
+                    <p>Wayne State University, GPA: 3.4</p>
+                    <p>Relevant Coursework: Software Engineering, Game Development, Communications, Technical Communications II</p>
+                </div>
+            </div>
+            
+            <!-- Experience Item 1 -->
+            <div class="timeline-item">
+                <div class="timeline-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.5 16C7.433 16 9 14.433 9 12.5C9 10.567 7.433 9 5.5 9C3.567 9 2 10.567 2 12.5C2 14.433 3.567 16 5.5 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M5.5 21V16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 21H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M17 5L14 8L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 21V13.5C14 12.6716 14.6716 12 15.5 12H18.5C19.3284 12 20 12.6716 20 13.5V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 21H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M17 3.5C18.1046 3.5 19 4.39543 19 5.5C19 6.60457 18.1046 7.5 17 7.5C15.8954 7.5 15 6.60457 15 5.5C15 4.39543 15.8954 3.5 17 3.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2022 - Present</div>
+                    <h3 class="timeline-title">Founder, Lead Programmer: AEGIS Video Game</h3>
+                    <p>Spearheaded the development of several video games, dedicating over 8 hours daily to coding, debugging, and feature implementation. Utilized Lua extensively in Roblox Studio.</p>
+                </div>
+            </div>
+            
+            <!-- Experience Item 2 -->
+            <div class="timeline-item">
+                <div class="timeline-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9M13 2L20 9M13 2V9H20M16 13H8M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2024</div>
+                    <h3 class="timeline-title">Backend Web Development: Wilson Adaptive Technologies</h3>
+                    <p>Optimized backend for wilsondaptive.com, leading a team to conduct analysis, make changes, and generate reports. Utilized HTML, CSS, and JavaScript.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <div class="contact-content">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 8L12 13L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4>Email</h4>
+                        <p>ammardeno@yahoo.com</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4>Location</h4>
+                        <p>Macomb, MI 48044</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 4H9L11 9L8.5 10.5C9.57096 12.6715 11.3285 14.429 13.5 15.5L15 13L20 15V19C20 20.1046 19.1046 21 18 21C14.1015 21 10.304 19.5744 7.22183 16.7782C4.57444 13.696 3 9.89853 3 6C3 4.89543 3.89543 4 5 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M15 7C15 8.65685 16.3431 10 18 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4>Phone</h4>
+                        <p>(586) 265-1295</p>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-form">
+                <form action="#" method="POST">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea id="message" name="message" class="form-control" placeholder="Enter your message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <a href="#" class="logo"><span>{</span>Ammar Deno<span class="logo-dot">.</span><span>}</span></a>
+            </div>
+            <div class="footer-links">
+                <a href="#home" class="footer-link">Home</a>
+                <a href="#about" class="footer-link">About</a>
+                <a href="#projects" class="footer-link">Projects</a>
+                <a href="#skills" class="footer-link">Skills</a>
+                <a href="#education" class="footer-link">Education</a>
+                <a href="#contact" class="footer-link">Contact</a>
+            </div>
+            <div class="social-links">
+                <a href="#" class="social-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 2H15C13.6739 2 12.4021 2.52678 11.4645 3.46447C10.5268 4.40215 10 5.67392 10 7V10H7V14H10V22H14V14H17L18 10H14V7C14 6.73478 14.1054 6.48043 14.2929 6.29289C14.4804 6.10536 14.7348 6 15 6H18V2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="#" class="social-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M23 3C22.0424 3.67548 20.9821 4.19211 19.86 4.53C19.2577 3.83751 18.4573 3.34669 17.567 3.12393C16.6767 2.90116 15.7395 2.9572 14.8821 3.28445C14.0247 3.61171 13.2884 4.1944 12.773 4.95372C12.2575 5.71303 11.9877 6.61234 12 7.53V8.53C10.2426 8.57557 8.50127 8.18581 6.93101 7.39545C5.36074 6.60508 4.01032 5.43864 3 4C3 4 -1 13 8 17C5.94053 18.398 3.48716 19.0989 1 19C10 24 21 19 21 7.5C20.9991 7.22145 20.9723 6.94359 20.92 6.67C21.9406 5.66349 22.6608 4.39271 23 3V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="#" class="social-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 8C17.5913 8 19.1174 8.63214 20.2426 9.75736C21.3679 10.8826 22 12.4087 22 14V21H18V14C18 13.4696 17.7893 12.9609 17.4142 12.5858C17.0391 12.2107 16.5304 12 16 12C15.4696 12 14.9609 12.2107 14.5858 12.5858C14.2107 12.9609 14 13.4696 14 14V21H10V14C10 12.4087 10.6321 10.8826 11.7574 9.75736C12.8826 8.63214 14.4087 8 16 8V8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 9H2V21H6V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M4 6C5.10457 6 6 5.10457 6 4C6 2.89543 5.10457 2 4 2C2.89543 2 2 2.89543 2 4C2 5.10457 2.89543 6 4 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="#" class="social-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 2H7C4.23858 2 2 4.23858 2 7V17C2 19.7614 4.23858 22 7 22H17C19.7614 22 22 19.7614 22 17V7C22 4.23858 19.7614 2 17 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 11.37C16.1234 12.2022 15.9813 13.0522 15.5938 13.799C15.2063 14.5458 14.5931 15.1514 13.8416 15.5297C13.0901 15.9079 12.2384 16.0396 11.4078 15.9059C10.5772 15.7723 9.80976 15.3801 9.21484 14.7852C8.61992 14.1902 8.22773 13.4228 8.09406 12.5922C7.9604 11.7616 8.09206 10.9099 8.47032 10.1584C8.84858 9.40685 9.45419 8.79374 10.201 8.40624C10.9478 8.01874 11.7978 7.87658 12.63 8C13.4789 8.12588 14.2649 8.52146 14.8717 9.1283C15.4785 9.73513 15.8741 10.5211 16 11.37Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="copyright">
+                &copy; 2024 Ammar Deno. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
     <script>
-        // Three.js Space Background Implementation
-const spaceBackground = document.getElementById('space-background');
-let renderer, scene, camera;
-let stars = [];
-let shootingStars = [];
-let raycaster, mouse;
-let updateCameraRotation;
-
-// Initialize Three.js scene
-function initThreeJS() {
-    // Create renderer with better color depth
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x050a30, 1); // Set a dark blue background instead of black
-    spaceBackground.appendChild(renderer.domElement);
-    
-    // Create scene
-    scene = new THREE.Scene();
-    
-    // Create camera with perspective view
-    camera = new THREE.PerspectiveCamera(
-        75, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
-        1000
-    );
-    camera.position.z = 50;
-    
-    // Initialize raycaster for star hover detection
-    raycaster = new THREE.Raycaster();
-    mouse = new THREE.Vector2();
-    
-    // Create stars
-    createStars();
-    
-    // Create initial shooting stars
-    for (let i = 0; i < 3; i++) {
-        createShootingStar();
-    }
-    
-    // Setup camera controls and get the update function
-    updateCameraRotation = setupCameraControls();
-    
-    // Handle window resize
-    window.addEventListener('resize', onWindowResize);
-    
-    // Start animation loop
-    animate();
-}
-
-// Setup camera controls for mouse and touch
-function setupCameraControls() {
-    // Variables to track mouse/touch position
-    let isPointerDown = false;
-    let previousX = 0;
-    let previousY = 0;
-    let targetRotationX = 0;
-    let targetRotationY = 0;
-    let currentRotationX = 0;
-    let currentRotationY = 0;
-    
-    // Constants for controlling camera movement
-    const rotationSpeed = 0.003;
-    const damping = 0.05;
-    const maxRotation = 0.2;
-    
-    // Mouse/touch down event
-    function onPointerDown(event) {
-        isPointerDown = true;
-        previousX = event.clientX || (event.touches ? event.touches[0].clientX : 0);
-        previousY = event.clientY || (event.touches ? event.touches[0].clientY : 0);
-    }
-    
-    // Mouse/touch move event
-    function onPointerMove(event) {
-        // Update mouse position for raycasting (for star hover effect)
-        const clientX = event.clientX || (event.touches && event.touches[0] ? event.touches[0].clientX : previousX);
-        const clientY = event.clientY || (event.touches && event.touches[0] ? event.touches[0].clientY : previousY);
-        
-        mouse.x = (clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
-        
-        // Camera rotation when pointer is moving
-        if (!isPointerDown) {
-            // Subtle movement even when not dragging
-            targetRotationX = mouse.y * 0.1;
-            targetRotationY = mouse.x * 0.1;
-            return;
-        }
-        
-        // Calculate how much the pointer has moved
-        const deltaX = (clientX - previousX) * rotationSpeed;
-        const deltaY = (clientY - previousY) * rotationSpeed;
-        
-        // Update target rotation with constraints
-        targetRotationY += deltaX;
-        targetRotationX -= deltaY;
-        
-        targetRotationY = Math.max(Math.min(targetRotationY, maxRotation), -maxRotation);
-        targetRotationX = Math.max(Math.min(targetRotationX, maxRotation), -maxRotation);
-        
-        // Update previous position
-        previousX = clientX;
-        previousY = clientY;
-    }
-    
-    // Mouse/touch up event
-    function onPointerUp() {
-        isPointerDown = false;
-    }
-    
-    // Update camera rotation in animation loop
-    function updateCameraRotation() {
-        // Smoothly interpolate current rotation towards target rotation
-        currentRotationX += (targetRotationX - currentRotationX) * damping;
-        currentRotationY += (targetRotationY - currentRotationY) * damping;
-        
-        // Apply rotation to camera
-        camera.rotation.x = currentRotationX;
-        camera.rotation.y = currentRotationY;
-        
-        // Add a small auto-rotation when idle
-        if (!isPointerDown) {
-            targetRotationY *= 0.98;
-            targetRotationX *= 0.98;
-        }
-    }
-    
-    // Add event listeners
-    window.addEventListener('mousedown', onPointerDown);
-    window.addEventListener('touchstart', onPointerDown);
-    window.addEventListener('mousemove', onPointerMove);
-    window.addEventListener('touchmove', onPointerMove);
-    window.addEventListener('mouseup', onPointerUp);
-    window.addEventListener('touchend', onPointerUp);
-    
-    // Return the update function to be called in the animation loop
-    return updateCameraRotation;
-}
-
-// Create stars in the scene
-function createStars() {
-    // Create 1000 small stars
-    for (let i = 0; i < 1000; i++) {
-        const geometry = new THREE.SphereGeometry(0.15, 8, 8); // Slightly larger stars
-        const material = new THREE.MeshBasicMaterial({ 
-            color: getRandomStarColor(), 
-            transparent: true,
-            opacity: Math.random() * 0.7 + 0.3 // Higher opacity for better visibility
+        // Loading Screen
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            loadingScreen.classList.add('hidden');
         });
-        const star = new THREE.Mesh(geometry, material);
-        
-        // Random position in 3D space
-        star.position.x = (Math.random() - 0.5) * 200;
-        star.position.y = (Math.random() - 0.5) * 200;
-        star.position.z = (Math.random() - 0.5) * 200;
-        
-        // Add twinkle effect
-        star.userData = {
-            originalScale: star.scale.x,
-            originalOpacity: material.opacity,
-            hovered: false,
-            twinkleSpeed: Math.random() * 0.03 + 0.01,
-            twinklePhase: Math.random() * Math.PI * 2
-        };
-        
-        scene.add(star);
-        stars.push(star);
-    }
-    
-    // Create a few larger, brighter stars
-    for (let i = 0; i < 50; i++) {
-        const geometry = new THREE.SphereGeometry(0.3, 8, 8);
-        const material = new THREE.MeshBasicMaterial({ 
-            color: getRandomStarColor(), 
-            transparent: true,
-            opacity: 0.9
-        });
-        const star = new THREE.Mesh(geometry, material);
-        
-        // Random position in 3D space
-        star.position.x = (Math.random() - 0.5) * 200;
-        star.position.y = (Math.random() - 0.5) * 200;
-        star.position.z = (Math.random() - 0.5) * 200;
-        
-        // Add twinkle effect
-        star.userData = {
-            originalScale: star.scale.x,
-            originalOpacity: material.opacity,
-            hovered: false,
-            twinkleSpeed: Math.random() * 0.05 + 0.02,
-            twinklePhase: Math.random() * Math.PI * 2
-        };
-        
-        scene.add(star);
-        stars.push(star);
-    }
-}
 
-// Create a new shooting star with enhanced visibility
-function createShootingStar() {
-    // Create a more visible shooting star
-    const geometry = new THREE.BufferGeometry();
-    const length = Math.random() * 20 + 3; // Longer trail
-    const width = Math.random() * 1 + 0.1; // Width of the trail
-    
-    // Number of points in the trail
-    const numPoints = 20; 
-    const positions = new Float32Array(numPoints * 3);
-    const colors = new Float32Array(numPoints * 3);
-    
-    // Starting point of the shooting star
-    const startX = (Math.random() - 0.5) * 200;
-    const startY = (Math.random() - 0.5) * 200;
-    const startZ = (Math.random() - 0.5) * 100;
-    
-    // Direction vector
-    const dirX = (Math.random() - 0.5) * 2;
-    const dirY = (Math.random() - 0.5) * 2;
-    const dirZ = 0;
-    
-    // Normalize direction vector
-    const magnitude = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
-    const normDirX = dirX / magnitude;
-    const normDirY = dirY / magnitude;
-    const normDirZ = dirZ / magnitude;
-    
-    // Create trail points with colors
-    for (let i = 0; i < numPoints; i++) {
-        const t = i / (numPoints - 1);
-        positions[i * 3] = startX - (normDirX * t * length);
-        positions[i * 3 + 1] = startY - (normDirY * t * length);
-        positions[i * 3 + 2] = startZ - (normDirZ * t * length);
-        
-        // Color gradient from white to blue
-        colors[i * 3] = 1; // R
-        colors[i * 3 + 1] = 1 - t * 0.7; // G
-        colors[i * 3 + 2] = 1; // B
-    }
-    
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    
-    // Create material with point size and vertex colors
-    const material = new THREE.PointsMaterial({
-        size: width,
-        vertexColors: true,
-        transparent: true,
-        opacity: 1,
-        sizeAttenuation: true,
-        blending: THREE.AdditiveBlending // Makes the shooting star glow
-    });
-    
-    const shootingStar = new THREE.Points(geometry, material);
-    
-    // Store shooting star properties
-    shootingStar.userData = {
-        dirX: normDirX * 3, // Faster movement
-        dirY: normDirY * 3,
-        dirZ: normDirZ * 3,
-        life: 1.0,
-        speed: Math.random() * 1.25 + 1.0, // Faster speed
-        positions: positions,
-        length: length
-    };
-    
-    scene.add(shootingStar);
-    shootingStars.push(shootingStar);
-}
-
-// Update shooting stars position and life
-function updateShootingStars() {
-    for (let i = shootingStars.length - 1; i >= 0; i--) {
-        const shootingStar = shootingStars[i];
-        
-        // Move shooting star
-        shootingStar.position.x += shootingStar.userData.dirX * shootingStar.userData.speed;
-        shootingStar.position.y += shootingStar.userData.dirY * shootingStar.userData.speed;
-        shootingStar.position.z += shootingStar.userData.dirZ * shootingStar.userData.speed;
-        
-        // Decrease life
-        shootingStar.userData.life -= 0.1;
-        shootingStar.material.opacity = shootingStar.userData.life;
-        
-        // Remove if life is over or out of view
-        if (shootingStar.userData.life <= 0 || 
-            Math.abs(shootingStar.position.x) > 150 || 
-            Math.abs(shootingStar.position.y) > 150) {
-            scene.remove(shootingStar);
-            shootingStars.splice(i, 1);
-        }
-    }
-    
-    // Create new shooting stars occasionally
-    if (Math.random() < 0.03) { // Higher chance of creating shooting stars
-        createShootingStar();
-    }
-}
-
-// Get random star color (more vibrant colors)
-function getRandomStarColor() {
-    const colors = [
-        0xffffff, // White
-        0x88aaff, // Bright blue
-        0xffcc88, // Warm yellow
-        0xff9999, // Bright pink
-        0xaaffaa, // Bright green
-        0xffaaff  // Purple
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
-// Handle window resize
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-// Update star hover effects and twinkle
-function updateStars() {
-    // Update the raycaster with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera);
-    
-    // Find intersections with stars
-    const intersects = raycaster.intersectObjects(stars);
-    
-    // Update all stars
-    const time = Date.now() * 0.001;
-    stars.forEach(star => {
-        // Twinkle effect
-        const twinkle = Math.sin(time * star.userData.twinkleSpeed + star.userData.twinklePhase) * 0.5 + 0.5;
-        const twinkleScale = 1 + twinkle * 0.3;
-        const twinkleOpacity = star.userData.originalOpacity * (0.7 + twinkle * 0.3);
-        
-        // Apply twinkle unless the star is hovered
-        if (!star.userData.hovered) {
-            star.scale.set(twinkleScale, twinkleScale, twinkleScale);
-            star.material.opacity = twinkleOpacity;
-        } else {
-            // Gradually return to original state if previously hovered
-            star.scale.lerp(new THREE.Vector3(
-                star.userData.originalScale,
-                star.userData.originalScale,
-                star.userData.originalScale
-            ), 0.1);
-            star.material.opacity = THREE.MathUtils.lerp(
-                star.material.opacity,
-                star.userData.originalOpacity,
-                0.1
-            );
-            
-            if (Math.abs(star.scale.x - star.userData.originalScale) < 0.01) {
-                star.userData.hovered = false;
-            }
-        }
-    });
-    
-    // Highlight hovered stars
-    if (intersects.length > 0) {
-        const hoveredStar = intersects[0].object;
-        hoveredStar.userData.hovered = true;
-        
-        // Gradually increase size and opacity
-        hoveredStar.scale.lerp(new THREE.Vector3(3, 3, 3), 0.2);
-        hoveredStar.material.opacity = THREE.MathUtils.lerp(
-            hoveredStar.material.opacity,
-            1.0,
-            0.2
-        );
-    }
-}
-
-// Animation loop
-function animate() {
-    requestAnimationFrame(animate);
-    
-    // Update camera rotation
-    updateCameraRotation();
-    
-    // Update shooting stars
-    updateShootingStars();
-    
-    // Update stars (hover and twinkle)
-    updateStars();
-    
-    // Render the scene
-    renderer.render(scene, camera);
-}
-
-// Initialize Three.js once the DOM is loaded
-document.addEventListener('DOMContentLoaded', initThreeJS);
-
-        // Detect if the device is mobile
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        // Original circle game logic
-        let miniGame = false;
-        let frequency = 1000;
-        let circleInterval;
-
-        // Function to create a circle - optimized for touch and mouse
-        function createCircle() {
-            if (!miniGame) return;
-
-            const circle = document.createElement('div');
-            const size = Math.random() * 50 + 20; // Random size between 20px and 70px
-            const randomColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
-
-            circle.className = 'circle';
-            circle.style.width = `${size}px`;
-            circle.style.height = `${size}px`;
-            circle.style.left = `${Math.random() * 100}vw`;
-            circle.style.top = `${Math.random() * 100}vh`;
-            circle.style.transform = 'scale(0)';
-            circle.style.opacity = '1';
-            circle.style.backgroundColor = randomColor;
-            document.getElementById('circle-container').appendChild(circle);
-
-            // Animate the circle to increase in size
-            setTimeout(() => {
-                circle.style.transform = 'scale(1)';
-            }, 100);
-
-            // Add pop effect on click/touch
-            const popCircle = () => {
-                circle.style.transform = 'scale(0)';
-                circle.style.opacity = '0';
-                frequency = Math.max(100, frequency - 50); // Prevent frequency from going below 100ms
-                resetCircleInterval();
-                setTimeout(() => {
-                    circle.remove();
-                }, 300);
-            };
-
-            circle.addEventListener('click', popCircle);
-            circle.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent default touch behavior
-                popCircle();
-            });
-
-            // Auto-pop the circle after a short time if not clicked
-            const autoPopTimeout = setTimeout(() => {
-                if (document.body.contains(circle)) {
-                    circle.style.transform = 'scale(0)';
-                    circle.style.opacity = '0';
-                    frequency = Math.min(2000, frequency + 50); // Cap frequency at 2000ms
-                    resetCircleInterval();
-                    setTimeout(() => {
-                        if (document.body.contains(circle)) {
-                            circle.remove();
-                        }
-                    }, 300);
-                }
-            }, 1000);
-
-            // Clear the auto-pop timeout if the circle is clicked
-            circle.addEventListener('click', () => {
-                clearTimeout(autoPopTimeout);
-            });
-            circle.addEventListener('touchstart', () => {
-                clearTimeout(autoPopTimeout);
-            });
-        }
-
-        // Function to toggle circle spawning on and off
-        const toggleCircleSpawning = () => {
-            frequency = 1000;
-            miniGame = !miniGame;
-            const toggleBtn = document.getElementById('toggleBtn');
-            toggleBtn.classList.toggle('active', miniGame);
-            
-            if (miniGame) {
-                resetCircleInterval();
+        // Navigation Scroll Effect
+        const nav = document.getElementById('main-nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
             } else {
-                clearInterval(circleInterval);
-                // Remove all existing circles
-                const circles = document.querySelectorAll('.circle');
-                circles.forEach(circle => {
-                    circle.remove();
-                });
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navLinks = document.getElementById('nav-links');
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Typed Text Animation
+        const typedText = document.getElementById('typed-text');
+        const texts = ["Hello, World!", "Welcome!", "Hi there!"];
+        let index = 0;
+        let charIndex = 0;
+
+        const type = () => {
+            if (charIndex < texts[index].length) {
+                typedText.textContent += texts[index].charAt(charIndex);
+                charIndex++;
+                setTimeout(type, 100);
+            } else {
+                setTimeout(erase, 2000);
             }
         };
 
-        // Function to reset the circle spawning interval
-        const resetCircleInterval = () => {
-            clearInterval(circleInterval);
-            circleInterval = setInterval(() => {
-                if (miniGame) {
-                    createCircle();
+        const erase = () => {
+            if (charIndex > 0) {
+                typedText.textContent = texts[index].substring(0, charIndex - 1);
+                charIndex--;
+                setTimeout(erase, 50);
+            } else {
+                index = (index + 1) % texts.length;
+                setTimeout(type, 500);
+            }
+        };
+
+        type();
+
+        // Animate on Scroll
+        const animateOnScroll = () => {
+        const elements = document.querySelectorAll('.project-card, .timeline-item');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementBottom = element.getBoundingClientRect().bottom;
+                if (elementTop < window.innerHeight && elementBottom > 0) {
+                    element.classList.add('animate');
                 }
-            }, frequency);
-        };
-
-        // Attach event listener to the toggle button
-        const toggleBtn = document.getElementById('toggleBtn');
-        toggleBtn.addEventListener('click', toggleCircleSpawning);
-        toggleBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            toggleCircleSpawning();
-        });
-
-        // Popup handling
-        const projectsBtn = document.getElementById('projectsBtn');
-        const popup = document.getElementById('popup');
-        const overlay = document.querySelector('.overlay');
-        const closeBtn = document.getElementById('closeBtn');
-        const elementsToFade = document.querySelectorAll('.fade-out');
-        const aboutMeBtn = document.getElementById('aboutMeBtn');
-        const resumeBtn = document.getElementById('resumeBtn');
-        const popupAbout = document.getElementById('popup-about');
-        const popupResume = document.getElementById('popup-resume');
-        const closeBtnAbout = document.getElementById('closeBtnAbout');
-        const closeBtnResume = document.getElementById('closeBtnResume');
-        const nonPopupContent = document.getElementById('non-popup-content');
-
-        // Function to show the popup and overlay
-        const showPopup = (popup) => {
-            popup.style.display = 'block';
-            overlay.style.display = 'block';
-            overlay.classList.add('active');
-            elementsToFade.forEach(element => {
-                element.classList.add('hidden');
             });
-            nonPopupContent.classList.add('disable-pointer-events');
         };
 
-        const hidePopup = (popup) => {
-            popup.style.display = 'none';
-            elementsToFade.forEach(element => {
-                element.classList.remove('hidden');
-            });
-            nonPopupContent.classList.remove('disable-pointer-events');
-        };
-
-        // Event listeners for buttons
-        aboutMeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPopup(popupAbout);
-        });
-        resumeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPopup(popupResume);
-        });
-        projectsBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPopup(popup);
-        });
-
-        // Event listeners for close buttons
-        closeBtnAbout.addEventListener('click', () => hidePopup(popupAbout));
-        closeBtnResume.addEventListener('click', () => hidePopup(popupResume));
-        closeBtn.addEventListener('click', () => hidePopup(popup));
-
-        // Update the overlay click event to close all popups
-        overlay.addEventListener('click', () => {
-            hidePopup(popup);
-            hidePopup(popupAbout);
-            hidePopup(popupResume);
-        });
+        window.addEventListener('scroll', animateOnScroll);
+        animateOnScroll();
     </script>
 </body>
 </html>
