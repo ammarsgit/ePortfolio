@@ -39,7 +39,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: -1;
+            z-index: -1; /* Ensure it stays behind the content */
         }
         
         .overlay {
@@ -861,24 +861,24 @@
             }
             
             .about-content {
-    display: flex;
-    align-items: center; /* Vertically center the image and text */
-    gap: 2rem; /* Adjust the gap between image and text */
-    max-width: 800px; /* Limit the overall width of the section */
-    margin: 0 auto; /* Center the container horizontally */
-    justify-content: flex-start; /* Align the content to the left */
-}
+                display: flex;
+                align-items: center; /* Vertically center the image and text */
+                gap: 2rem; /* Adjust the gap between image and text */
+                max-width: 800px; /* Limit the overall width of the section */
+                margin: 0 auto; /* Center the container horizontally */
+                justify-content: flex-start; /* Align the content to the left */
+            }
 
-    .about-image {
-        width: 150px; /* Reduce the image size for smaller screens */
-        height: 150px; /* Reduce the image size for smaller screens */
-        margin-bottom: 1rem; /* Add space below the image */
-    }
+            .about-image {
+                width: 150px; /* Reduce the image size for smaller screens */
+                height: 150px; /* Reduce the image size for smaller screens */
+                margin-bottom: 1rem; /* Add space below the image */
+            }
 
-    .about-content > div {
-    max-width: 600px; /* Limit the text container width */
-    text-align: left; /* Align text to the left */
-}
+            .about-content > div {
+                max-width: 600px; /* Limit the text container width */
+                text-align: left; /* Align text to the left */
+            }
             
             .timeline::before {
                 left: 30px;
@@ -957,6 +957,8 @@
 
     <!-- Three.js Canvas Container -->
     <div id="canvas-container"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <div class="overlay"></div>
 
     <!-- Navigation -->
@@ -1395,7 +1397,7 @@
                 </a>
             </div>
             <div class="copyright">
-                &copy; 2024 Ammar Deno. All rights reserved.
+                &copy; 2025 Ammar Deno. All rights reserved.
             </div>
         </div>
     </footer>
@@ -1407,6 +1409,77 @@
             const loadingScreen = document.getElementById('loading-screen');
             loadingScreen.classList.add('hidden');
         });
+
+
+        // Three.js Particle Effect
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvasContainer = document.getElementById('canvas-container');
+
+            // Scene, Camera, Renderer
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            canvasContainer.appendChild(renderer.domElement);
+
+            // Particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1000;
+            const positions = new Float32Array(particlesCount * 3);
+
+            for (let i = 0; i < particlesCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 10;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                color: 0x4F46E5,
+            });
+
+            const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+
+            // Camera Position
+            camera.position.z = 5;
+
+            // Mouse Interaction
+            const mouse = new THREE.Vector2();
+            window.addEventListener('mousemove', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            // Animation Loop
+            const animate = () => {
+                requestAnimationFrame(animate);
+
+                // Rotate Particles
+                particles.rotation.x += 0.001;
+                particles.rotation.y += 0.001;
+
+                // Move Particles Based on Mouse Position
+                //particles.position.x = mouse.x * 0.5;
+                //particles.position.y = mouse.y * 0.5;
+
+                renderer.render(scene, camera);
+            };
+
+            animate();
+
+            // Handle Window Resize
+            window.addEventListener('resize', () => {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            });
+        });
+
 
         // Navigation Scroll Effect
         const nav = document.getElementById('main-nav');
